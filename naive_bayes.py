@@ -70,18 +70,9 @@ def createVocabList(input_x):
 # 统计词语，存在则为1
 def setOfWords2Vec(vocabList, inputSet):
     returnVec = [0] * len(vocabList)
-    for words in inputSet:
-        for word in words:
-            if word in vocabList:
-                returnVec[vocabList.index(word)] += 1
-    return returnVec
-
-
-def setOfWords2Vec_test(vocabList, inputSet):
-    returnVec = [0] * len(vocabList)
-    for words in inputSet:
-        if words in vocabList:
-            returnVec[vocabList.index(words)] += 1
+    for word in inputSet:
+        if word in vocabList:
+            returnVec[vocabList.index(word)] = 1
     return returnVec
 
 
@@ -89,15 +80,17 @@ def trainNB0(trainMatrix, trainCategory):
     numTrainDocs = len(trainMatrix)
     numWords = len(trainMatrix[0])
     pAbusive = sum(trainCategory) / float(numTrainDocs)
-    p0Num = np.ones(numWords);
+    p0Num = np.ones(numWords)
     p1Num = np.ones(numWords)
-    p0Denom = 2.0;
+    p0Denom = 2.0
     p1Denom = 2.0
     for i in range(numTrainDocs):
         if trainCategory[i] == 1:
             p1Num += trainMatrix[i]
+            print(1)
             p1Denom += sum(trainMatrix[i])
         else:
+            print(0)
             p0Num += trainMatrix[i]
             p0Denom += sum(trainMatrix[i])
     p1Vect = np.log(p1Num / p1Denom)
@@ -116,22 +109,28 @@ def classifyNB(vec2Classify, p0Vec, p1Vec, pClass1):
 
 
 if __name__ == '__main__':
-    train_path = './spamDataset/email/train1'
-    test_path = './spamDataset/email/test1'
+    train_path = './spamDataset/email/train'
+    test_path = './spamDataset/email/test'
     datalist = load_files('./spamDataset/all_text', train_path)
     testlist = load_files('./spamDataset/test_text', test_path)
     input_x, input_y = split_data_with_label('./spamDataset/all_text')
     test_x, test_y = split_data_with_label('./spamDataset/test_text')
     myVocablist = createVocabList(input_x)
     trainMat = []
-    for doc in input_x:
-        trainMat.append(setOfWords2Vec(myVocablist, input_x))
+    print(myVocablist)
+    print(input_x)
+    for postinDoc in input_x:
+        trainMat.append(setOfWords2Vec(myVocablist, postinDoc))
     print(trainMat)
     p0V, p1V, pA = trainNB0(trainMat, input_y)
+    print(p0V)
+
+    print(p1V)
     result = []
     for testEntry in test_x:
         print(testEntry)
-        thisDoc = setOfWords2Vec_test(myVocablist, testEntry)
+        thisDoc = setOfWords2Vec(myVocablist, testEntry)
         print(thisDoc)
         result.append(classifyNB(thisDoc, p0V, p1V, pA))
     print(result)
+    print(test_y)
